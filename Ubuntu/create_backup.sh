@@ -47,6 +47,10 @@ DESTINATION="$BACKUP_DIR/$FILENAME"
 
 # Create a compressed tar archive of the entire root filesystem excluding specified directories
 echo "Starting backup to $DESTINATION..."
+
+# Temporary file for capturing tar errors
+TAR_ERR_FILE=$(mktemp)
+
 if ! sudo tar czf "$DESTINATION" \
 --exclude=/backups \
 --exclude=/proc \
@@ -63,13 +67,20 @@ if ! sudo tar czf "$DESTINATION" \
 --exclude=/var/log \
 --exclude=/swapfile \
 --exclude=/home/*/.cache \
-/ 2> >(grep -v 'socket ignored' >&2); then
+/ 2> "$TAR_ERR_FILE"; then
+    # Filter out 'socket ignored' but keep the rest for logging
+    grep -v 'socket ignored' "$TAR_ERR_FILE" >&2
     echo "Backup failed. Exiting."
+    rm "$TAR_ERR_FILE"
     exit 1
 else
+    # Optionally, display or log 'socket ignored' messages if you wish
+    grep 'socket ignored' "$TAR_ERR_FILE" >&2
     echo "Backup completed successfully."
 fi
 
+# Clean up the temporary error file
+rm "$TAR_ERR_FILE"
 
 # Verify the integrity of the backup
 if ! tar tzf "$DESTINATION" > /dev/null; then
@@ -81,7 +92,7 @@ echo "Backup completed: $DESTINATION"
 
 # Backup Rotation: Keep only the last 5 backups
 echo "Checking for old backups to maintain only the last 5..."
-cd "$BACKUP_DIR"
+cd "$BACKUP_DIR" || exit 1
 ls -t | grep "${HOSTNAME}_.*_full_backup.tar.gz" | tail -n +6 | xargs -r rm --
 
 # Logging
