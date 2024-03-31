@@ -51,7 +51,7 @@ echo "Starting backup to $DESTINATION..."
 # Temporary file for capturing tar errors
 TAR_ERR_FILE=$(mktemp)
 
-if ! sudo tar czf "$DESTINATION" \
+if ! tar czf "$DESTINATION" \
 --exclude=/backups \
 --exclude=/proc \
 --exclude=/sys \
