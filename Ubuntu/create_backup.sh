@@ -47,9 +47,11 @@ DESTINATION="$BACKUP_DIR/$FILENAME"
 
 # Create a compressed tar archive of the entire root filesystem excluding specified directories
 echo "Starting backup to $DESTINATION..."
-if ! sudo tar czf "$DESTINATION" --exclude=/proc --exclude=/sys --exclude=/tmp --exclude=/dev --exclude=/mnt --exclude=/media / ; then
+if ! sudo tar czf "$DESTINATION" --exclude=/proc --exclude=/sys --exclude=/tmp --exclude=/dev --exclude=/mnt --exclude=/media / 2> >(grep -v 'socket ignored' >&2); then
     echo "Backup failed. Exiting."
     exit 1
+else
+    echo "Backup completed successfully."
 fi
 
 # Verify the integrity of the backup
