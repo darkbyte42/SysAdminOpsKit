@@ -70,9 +70,9 @@ if ! tar czf "$DESTINATION" \
 / 2> "$TAR_ERR_FILE"; then
     # Filter out 'socket ignored' but keep the rest for logging
     grep -v 'socket ignored' "$TAR_ERR_FILE" >&2
-    #echo "Backup failed. Exiting."
-    #rm "$TAR_ERR_FILE"
-    #exit 1
+    echo "Backup failed. Exiting."
+    rm "$TAR_ERR_FILE"
+    exit 1
 else
     # Optionally, display or log 'socket ignored' messages if you wish
     grep 'socket ignored' "$TAR_ERR_FILE" >&2
